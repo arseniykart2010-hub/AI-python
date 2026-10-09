@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyCamp: Полный курс по Python</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-sidebar: #252526;
+            --text-light: #d4d4d4;
+            --text-muted: #9cdcfe;
+            --accent: #007acc;
+            --success: #4ec9b0;
+            --border: #333333;
+        }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-light); }
+        
+        .layout { display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Сайдбар (оглавление) */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .sidebar h2 { margin-top: 0; color: var(--accent); font-size: 1.2rem; }
+        .module { margin-bottom: 1.5rem; }
+        .module-title { font-weight: bold; color: var(--text-muted); cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+        .module-title:hover { color: var(--text-light); }
+        .lessons { list-style: none; padding-left: 1rem; margin: 0.5rem 0 0 0; display: none; }
+        .lessons.active { display: block; }
+        .lesson-item { padding: 0.3rem 0; cursor: pointer; font-size: 0.9rem; }
+        .lesson-item:hover { color: var(--accent); }
+        .lesson-item.active { color: var(--accent); font-weight: bold; }
+
+        /* Основной контент */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .lesson-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .lesson-title { font-size: 1.3rem; margin: 0; }
+        #run-code { background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; }
+        #run-code:hover { background: #005a9e; }
+
+        .content-area {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .editor-panel, .output-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border);
+        }
+        #code-editor, #output {
+            flex-grow: 1;
+            padding: 1rem;
+            margin: 0;
+            border: none;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-y: auto;
+            resize: none;
+            outline: none;
+        }
+        #output { background-color: #000000; color: #ffffff; white-space: pre-wrap; }
+
+        /* Утилиты */
+        .hidden { display: none; }
+        .btn { padding: 0.5rem 1rem; border: 1px solid var(--border); background: var(--bg-sidebar); color: var(--text-light); cursor: pointer; border-radius: 4px; margin-left: 0.5rem; }
+        .btn:hover { background: #333333; }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <!-- Сайдбар с навигацией -->
+    <div class="sidebar" id="sidebar">
+        <h2>PyCamp</h2>
+        <div class="module">
+            <div class="module-title" onclick="toggleModule(0)">📦 Модуль 1: Основы <span id="arrow-0">▼</span></div>
+            <ul class="lessons" id="lessons-0">
+                <li class="lesson-item active" data-module="0" data-lesson="0" onclick="loadLesson(0, 0)">01. Привет, мир!</li>
+                <li class="lesson-item" data-module="0" data-lesson="1" onclick="loadLesson(0, 1)">02. Переменные и типы</li>
+                <li class="lesson-item" data-module="0" data-lesson="2" onclick="loadLesson(0, 2)">03. Калькулятор</li>
+            </ul>
+        </div>
+        <div class="module">
+            <div class="module-title" onclick="toggleModule(1)">🧩 Модуль 2: Управление потоком <span id="arrow-1">▶</span></div>
+            <ul class="lessons" id="lessons-1">
+                <li class="lesson-item" data-module="1" data-lesson="0" onclick="loadLesson(1, 0)">01. Условный оператор if</li>
+                <li class="lesson-item" data-module="1" data-lesson="1" onclick="loadLesson(1, 1)">02. Цикл for</li>
+                <li class="lesson-item" data-module="1" data-lesson="2" onclick="loadLesson(1, 2)">03. Цикл while</li>
+            </ul>
+        </div>
+        <div class="module">
+            <div class="module-title" onclick="toggleModule(2)">📂 Модуль 3: Структуры данных <span id="arrow-2">▶</span></div>
+            <ul class="lessons" id="lessons-2">
+                <li class="lesson-item" data-module="2" data-lesson="0" onclick="loadLesson(2, 0)">01. Списки (Lists)</li>
+                <li class="lesson-item" data-module="2" data-lesson="1" onclick="loadLesson(2, 1)">02. Словари (Dictionaries)</li>
+            </ul>
+        </div>
+        <div class="module">
+            <div class="module-title" onclick="toggleModule(3)">⚙️ Модуль 4: Функции <span id="arrow-3">▶</span></div>
+            <ul class="lessons" id="lessons-3">
+                <li class="lesson-item" data-module="3" data-lesson="0" onclick="loadLesson(3, 0)">01. Создание функций</li>
+                <li class="lesson-item" data-module="3" data-lesson="1" onclick="loadLesson(3, 1)">02. Аргументы и return</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Основной рабочий экран -->
+    <div class="main-content">
+        <div class="lesson-header">
+            <h3 class="lesson-title" id="lesson-title">01. Привет, мир!</h3>
+            <div>
+                <button id="run-code" onclick="executePython()">▶ Выполнить код</button>
+                <button class="btn" id="solution-btn" onclick="showSolution()">Показать решение</button>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="editor-panel">
+                <div class="panel-header">Код (Python)</div>
+                <textarea id="code-editor">print("Привет, PyCamp!")</textarea>
+            </div>
+            <div class="output-panel">
+                <div class="panel-header">Вывод</div>
+                <pre id="output"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pyodide (компилятор Python в браузере) -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+
+<script>
+// База данных курса
+const course = {
+    modules: [
+        {
+            title: "Модуль 1: Основы",
+            lessons: [
+                {
+                    title: "01. Привет, мир!",
+                    task: "Выведите на экран фразу 'Привет, PyCamp!'. Используйте функцию print().",
+                    solution: 'print("Привет, PyCamp!")',
+                    starterCode: 'print("Ваша строка здесь")'
+                },
+                {
+                    title: "02. Переменные и типы",
+                    task: "Создайте переменную name со своим именем и переменную age с вашим возрастом. Выведите их на экран.",
+                    solution: 'name = "Иван"\nage = 25\nprint(f"Имя: {name}, Возраст: {age}")',
+                    starterCode: 'name = ""\nage = 0\nprint(f"Имя: {name}, Возраст: {age}")'
+                },
+                {
+                    title: "03. Калькулятор",
+                    task: "Создайте две переменные a = 10 и b = 3. Выведите результат их сложения, вычитания, умножения и деления.",
+                    solution: 'a = 10\nb = 3\nprint(a + b)\nprint(a - b)\nprint(a * b)\nprint(a / b)',
+                    starterCode: 'a = 10\nb = 3\n# Ваш код здесь'
+                }
+            ]
+        },
+        {
+            title: "Модуль 2: Управление потоком",
+            lessons: [
+                {
+                    title: "01. Условный оператор if",
+                    task: "Создайте переменную x = 5. Если x больше 0, выведите 'Положительное'. Иначе выведите 'Отрицательное или ноль'.",
+                    solution: 'x = 5\nif x > 0:\n    print("Положительное")\nelse:\n    print("Отрицательное или ноль")',
+                    starterCode: 'x = 5\n# Ваш код здесь'
+                },
+                {
+                    title: "02. Цикл for",
+                    task: "Используя цикл for, выведите числа от 1 до 5.",
+                    solution: 'for i in range(1, 6):\n    print(i)',
+                    starterCode: '# Используйте цикл for и range()'
+                },
+                {
+                    title: "03. Цикл while",
+                    task: "Используя цикл while, выведите числа от 5 до 1 в обратном порядке.",
+                    solution: 'i = 5\nwhile i > 0:\n    print(i)\n    i -= 1',
+                    starterCode: '# Используйте цикл while'
+                }
+            ]
+        },
+        {
+            title: "Модуль 3: Структуры данных",
+            lessons: [
+                {
+                    title: "01. Списки (Lists)",
+                    task: "Создайте список fruits с тремя названиями фруктов. Выведите второй фрукт из списка.",
+                    solution: 'fruits = ["яблоко", "банан", "груша"]\nprint(fruits[1])',
+                    starterCode: 'fruits = []\n# Ваш код здесь'
+                },
+                {
+                    title: "02. Словари (Dictionaries)",
+                    task: "Создайте словарь user с ключами name и city. Выведите значение по ключу name.",
+                    solution: 'user = {"name": "Анна", "city": "Москва"}\nprint(user["name"])',
+                    starterCode: 'user = {}\n# Ваш код здесь'
+                }
+            ]
+        },
+        {
+            title: "Модуль 4: Функции",
+            lessons: [
+                {
+                    title: "01. Создание функций",
+                    task: "Создайте функцию greet(), которая выводит 'Функции работают!'. Вызовите её.",
+                    solution: 'def greet():\n    print("Функции работают!")\n\ngreet()',
+                    starterCode: '# Создайте функцию здесь'
+                },
+                {
+                    title: "02. Аргументы и return",
+                    task: "Создайте функцию sum(a, b), которая возвращает сумму двух чисел. Вызовите её с числами 5 и 10 и выведите результат.",
+                    solution: 'def sum(a, b):\n    return a + b\n\nresult = sum(5, 10)\nprint(result)',
+                    starterCode: '# Создайте функцию и вызовите её'
+                }
+            ]
+        }
+    ]
+};
+
+// Состояние приложения
+let currentModule = 0;
+let currentLesson = 0;
+let pyodide = null;
+
+// Инициализация Pyodide
+async function loadPyodide() {
+    pyodide = await loadPyodideAsync();
+    // Подавляем вывод приветствия Pyodide
+    pyodide.runPython(`import sys
+import io
+sys.stdout = io.StringIO()`);
+}
+
+// Навигация
+function toggleModule(index) {
+    const lessons = document.getElementById(`lessons-${index}`);
+    const arrow = document.getElementById(`arrow-${index}`);
+    const isActive = lessons.classList.contains('active');
+    
+    // Закрываем все остальные модули
+    document.querySelectorAll('.lessons').forEach(el => {
+        el.classList.remove('active');
+    });
+    document.querySelectorAll('.module-title span').forEach(el => {
+        el.textContent = '▶';
+    });
+
+    if (!isActive) {
+        lessons.classList.add('active');
+        arrow.textContent = '▼';
+    }
+}
+
+function loadLesson(moduleIndex, lessonIndex) {
+    currentModule = moduleIndex;
+    currentLesson = lessonIndex;
+    
+    // Обновляем активные классы в сайдбаре
+    document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
+    document.querySelector(`.lesson-item[data-module="${moduleIndex}"][data-lesson="${lessonIndex}"]`).classList.add('active');
+    
+    const lesson = course.modules[moduleIndex].lessons[lessonIndex];
+    document.getElementById('lesson-title').textContent = lesson.title;
+    document.getElementById('code-editor').value = lesson.starterCode;
+    document.getElementById('output').textContent = '';
+}
+
+// Выполнение кода
+async function executePython() {
+    if (!pyodide) await loadPyodide();
+    
+    const code = document.getElementById('code-editor').value;
+    const output = document.getElementById('output');
+    output.textContent = 'Выполнение...';
+    
+    try {
+        // Очищаем буфер вывода
+        pyodide.runPython(`sys.stdout.truncate(0); sys.stdout.seek(0)`);
+        // Выполняем код пользователя
+        pyodide.runPython(code);
+        // Забираем результат
+        const stdout = pyodide.runPython('sys.stdout.getvalue()');
+        output.textContent = stdout || 'Код выполнен без вывода.';
+    } catch (err) {
+        output.textContent = 'Ошибка:\n' + err.message;
+    }
+}
+
+// Показать решение
+function showSolution() {
+    const solution = course.modules[currentModule].lessons[currentLesson].solution;
+    document.getElementById('code-editor').value = solution;
+}
+
+// Загрузка первого урока при старте
+document.addEventListener('DOMContentLoaded', () => {
+    loadLesson(0, 0);
+});
+</script>
+
+</body>
+</html>
